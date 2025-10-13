@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: electricity-board-backend
+    name: fullstack_project1
     env: python
-    rootDir: backend
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
-    startCommand: "gunicorn project.wsgi"
+    buildCommand: "./build.sh"
+    startCommand: "cd project && gunicorn project.asgi:application -k uvicorn.workers.UvicornWorker"
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: project.settings
       - key: PYTHON_VERSION
-        value: 3.12.4
-      - fromGroup: database-credentials # Make sure you create this Environment Group in Render
+        value: 3.13.4

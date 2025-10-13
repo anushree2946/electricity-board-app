@@ -24,7 +24,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # ✅ Allowed domains
-# Add your Render backend, Netlify frontend, and local development
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
@@ -36,18 +35,14 @@ ALLOWED_HOSTS = [
 # INSTALLED APPS
 # ===========================
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    # Your Django apps
-    'app',
-
-    # For handling CORS
-    'corsheaders',
+    "corsheaders",  # ✅ FIXED: Added comma here
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "app",  # Your custom Django app
 ]
 
 # ===========================
@@ -55,13 +50,7 @@ INSTALLED_APPS = [
 # ===========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-
-    # Whitenoise for static file serving in production
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-
-    # CORS middleware should be high in the list
     "corsheaders.middleware.CorsMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -130,7 +119,7 @@ USE_TZ = True
 # STATIC FILES
 # ===========================
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"  # Where collectstatic stores files
+STATIC_ROOT = BASE_DIR /'staticfiles'  # Where collectstatic stores files
 
 # Whitenoise compression
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -143,13 +132,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ===========================
 # CORS SETTINGS
 # ===========================
-# ⚠️ IMPORTANT:
-# Do NOT include trailing slash at the end of domains in CORS_ALLOWED_ORIGINS
-
 CORS_ALLOWED_ORIGINS = [
-    "https://electricity-frontend.netlify.app",  # Netlify frontend
     "http://localhost:3000",                     # Local React dev server
 ]
 
 # For debugging only, if CORS issues persist:
-# CORS_ALLOW_ALL_ORIGINS = True

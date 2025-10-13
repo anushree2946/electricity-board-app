@@ -1,10 +1,9 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { Row, Col, Button, ButtonGroup } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
-import 'react-datepicker/dist/react-datepicker.css';
-import "./Home.css"; // Assuming you have a separate CSS file
+import "react-datepicker/dist/react-datepicker.css";
+import "./Home.css";
 
 function Home() {
   const [data, setData] = useState([]);
@@ -13,34 +12,60 @@ function Home() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-   
     fetchData();
+    // eslint-disable-next-line
   }, [currentPage, startDate, endDate, searchQuery]);
 
+  // ===========================
+  // Fetch Data from Backend API
+  // ===========================
   const fetchData = async () => {
     try {
-      let url = `https://electricity-board-q9zx.onrender.com/api/getApplicantsData/?page=${currentPage}`;
-      if(startDate && endDate){
-        // console.log(startDate)
-        // console.log(startDate.toISOString().split("T")[0])
-        url += `&start_date=${startDate.toISOString().split("T")[0]}&end_date=${
-          endDate.toISOString().split("T")[0]
-        }`;
+      setLoading(true);
+
+      let url = `http://127.0.0.1:8000/api/getApplicantsData/?page=${currentPage}`;
+
+      if (startDate && endDate) {
+        url += `&start_date=${startDate.toISOString().split("T")[0]}&end_date=${endDate
+          .toISOString()
+          .split("T")[0]}`;
       }
 
-      if(searchQuery){
-        url+=`&search=${searchQuery}`
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
       }
+
+      console.log("Fetching data from:", url);
+
       const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const jsonData = await response.json();
-      setData(jsonData.data);
-      setTotalPages(jsonData.total_pages); // Fixed this line
+      console.log("API Response:", jsonData);
+
+      if (jsonData.data && jsonData.data.length > 0) {
+        setData(jsonData.data);
+        setTotalPages(jsonData.total_pages || 1);
+      } else {
+        setData([]);
+        setTotalPages(1);
+      }
     } catch (error) {
-      console.log("Error fetching data", error);
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ===========================
+  // Handlers
+  // ===========================
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
@@ -60,47 +85,58 @@ function Home() {
   const handleLastPageClick = () => {
     setCurrentPage(totalPages);
   };
+
   const handlePageClick = (page) => {
-      setCurrentPage(page);
-    };
+    setCurrentPage(page);
+  };
+
+  // ===========================
+  // Render Component
+  // ===========================
   return (
-    <>
-      <div className="container mt-2">
-        <h1>Applicant Details</h1>
-        <hr />
-        <Row>
-          <p>Filter By Date of Application</p>
-          <Col md={2}>
-            <DatePicker
-              selected={startDate}
-              className="form-control date"
-              onChange={handleStartDateChange}
-              placeholderText="From Date"
-            />
-          </Col>
-          <Col md={2}>
-            <DatePicker
-              selected={endDate}
-              className="form-control date"
-              onChange={handleEndDateChange}
-              placeholderText="To Date"
-            />
-          </Col>
+    <div className="container mt-2">
+      <h1>Applicant Details</h1>
+      <hr />
 
-          <Col md={3}></Col>
+      {/* Filters */}
+      <Row>
+        <p>Filter By Date of Application</p>
+        <Col md={2}>
+          <DatePicker
+            selected={startDate}
+            className="form-control date"
+            onChange={handleStartDateChange}
+            placeholderText="From Date"
+          />
+        </Col>
+        <Col md={2}>
+          <DatePicker
+            selected={endDate}
+            className="form-control date"
+            onChange={handleEndDateChange}
+            placeholderText="To Date"
+          />
+        </Col>
 
-          <Col md={5}>
-            <input
-              type="text"
-              className="form-control"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search By Applicant ID.."
-            />
-          </Col>
-        </Row>
-        <hr />
-        <div className="table-container">
+        <Col md={3}></Col>
+
+        <Col md={5}>
+          <input
+            type="text"
+            className="form-control"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search By Applicant ID.."
+          />
+        </Col>
+      </Row>
+      <hr />
+
+      {/* Table */}
+      <div className="table-container">
+        {loading ? (
+          <p className="text-center">Loading data...</p>
+        ) : (
           <table className="table table-bordered">
             <thead className="sticky-header">
               <tr>
@@ -125,77 +161,83 @@ function Home() {
             </thead>
 
             <tbody>
-              {data?.map((connection) => (
-                <tr key={connection.id}>
-                  <td>{connection.id}</td>
-                  <td>{connection.Applicant.Applicant_Name}</td>
-                  <td>{connection.Applicant.Gender}</td>
-                  <td>{connection.Applicant.District}</td>
-                  <td>{connection.Applicant.State}</td>
-                  <td>{connection.Applicant.Pincode}</td>
-                  <td>{connection.Applicant.Ownership}</td>
-                  <td>{connection.Applicant.GovtID_Type}</td>
-                  <td>{connection.Applicant.ID_Number}</td>
-                  <td>{connection.Applicant.Category}</td>
-                  <td>{connection.Load_Applied}</td>
-                  <td>{connection.Date_of_Application}</td>
-                  <td>{connection.Status}</td>
-                  <td>{connection.Reviewer_ID}</td>
-                  <td>{connection.Reviewer_Name}</td>
-                  <td>{connection.Reviewer_Comments}</td>
-                  <td>
-                    <Link
-                      type="button"
-                      to={`/editApplicant/${connection.id}`}
-                      className="btn btn-outline-success btn-sm"
-                    >
-                      <i className="fa-solid fa-pen-to-square">Edit</i>
-                    </Link>
+              {data.length > 0 ? (
+                data.map((connection) => (
+                  <tr key={connection.id}>
+                    <td>{connection.id}</td>
+                    <td>{connection.Applicant?.Applicant_Name || "N/A"}</td>
+                    <td>{connection.Applicant?.Gender || "N/A"}</td>
+                    <td>{connection.Applicant?.District || "N/A"}</td>
+                    <td>{connection.Applicant?.State || "N/A"}</td>
+                    <td>{connection.Applicant?.Pincode || "N/A"}</td>
+                    <td>{connection.Applicant?.Ownership || "N/A"}</td>
+                    <td>{connection.Applicant?.GovtID_Type || "N/A"}</td>
+                    <td>{connection.Applicant?.ID_Number || "N/A"}</td>
+                    <td>{connection.Applicant?.Category || "N/A"}</td>
+                    <td>{connection.Load_Applied || "N/A"}</td>
+                    <td>{connection.Date_of_Application || "N/A"}</td>
+                    <td>{connection.Status || "N/A"}</td>
+                    <td>{connection.Reviewer_ID || "N/A"}</td>
+                    <td>{connection.Reviewer_Name || "N/A"}</td>
+                    <td>{connection.Reviewer_Comments || "N/A"}</td>
+                    <td>
+                      <Link
+                        type="button"
+                        to={`/editApplicant/${connection.id}`}
+                        className="btn btn-outline-success btn-sm"
+                      >
+                        <i className="fa-solid fa-pen-to-square">Edit</i>
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="17" className="text-center">
+                    No data available
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-
-         
-        </div>
-        <div className="container">
-            <ul className="pagination">
-              <li
-                className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-              >
-                <button onClick={handleFirstPageClick} className="page-link">
-                  Go to First
-                </button>
-              </li>
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <li
-                  key={index}
-                  className={`page-item ${
-                    currentPage === index + 1 ? "active" : ""
-                  }`}
-                >
-                  <button
-                    onClick={() => handlePageClick(index + 1)}
-                    className="page-link"
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              ))}
-              <li
-                className={`page-item ${
-                  currentPage === totalPages ? "disabled" : ""
-                }`}
-              >
-                <button onClick={handleLastPageClick} className="page-link">
-                  Go to Last
-                </button>
-              </li>
-            </ul>
-          </div>
+        )}
       </div>
-    </>
+
+      {/* Pagination */}
+      <div className="container">
+        <ul className="pagination">
+          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+            <button onClick={handleFirstPageClick} className="page-link">
+              Go to First
+            </button>
+          </li>
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <li
+              key={index}
+              className={`page-item ${
+                currentPage === index + 1 ? "active" : ""
+              }`}
+            >
+              <button
+                onClick={() => handlePageClick(index + 1)}
+                className="page-link"
+              >
+                {index + 1}
+              </button>
+            </li>
+          ))}
+          <li
+            className={`page-item ${
+              currentPage === totalPages ? "disabled" : ""
+            }`}
+          >
+            <button onClick={handleLastPageClick} className="page-link">
+              Go to Last
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
   );
 }
 
