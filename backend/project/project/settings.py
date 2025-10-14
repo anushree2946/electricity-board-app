@@ -27,8 +27,8 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "electricityconnect.onrender.com",   # ✅ your actual Render backend URL
-    "electricity-frontend.netlify.app"   # ✅ your actual frontend URL
+    "electricity-board-q9zx.onrender.com",  # ✅ your actual Render backend URL from logs
+    "electricity-frontend.netlify.app"      # ✅ your frontend (if you have one)
 ]
 
 # ===========================
