@@ -139,3 +139,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # For debugging only, if CORS issues persist:
 CORS_ALLOW_CREDENTIALS = True
+DEBUG = True
