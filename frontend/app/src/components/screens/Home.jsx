@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import API_BASE_URL from "../../api"; 
 import { Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
@@ -14,85 +16,47 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ===========================
+  // Fetch Data from Django API
+  // ===========================
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // ⭐ FINAL FIXED URL ⭐
+        let url = `${API_BASE_URL}/api/getApplicantsData?page=${currentPage}`;
+
+        if (startDate && endDate) {
+          url += `&start_date=${startDate.toISOString().split("T")[0]}&end_date=${endDate
+            .toISOString()
+            .split("T")[0]}`;
+        }
+
+        if (searchQuery.trim()) {
+          url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+        }
+
+        console.log("Fetching data from:", url);
+
+        const response = await axios.get(url);
+        const jsonData = response.data;
+
+        console.log("API Response:", jsonData);
+
+        setData(jsonData.data || []);
+        setTotalPages(jsonData.total_pages || 1);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
-    // eslint-disable-next-line
   }, [currentPage, startDate, endDate, searchQuery]);
 
-  // ===========================
-  // Fetch Data from Backend API
-  // ===========================
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      let url = `http://127.0.0.1:8000/api/getApplicantsData/?page=${currentPage}`;
-
-      if (startDate && endDate) {
-        url += `&start_date=${startDate.toISOString().split("T")[0]}&end_date=${endDate
-          .toISOString()
-          .split("T")[0]}`;
-      }
-
-      if (searchQuery.trim()) {
-        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
-      }
-
-      console.log("Fetching data from:", url);
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const jsonData = await response.json();
-      console.log("API Response:", jsonData);
-
-      if (jsonData.data && jsonData.data.length > 0) {
-        setData(jsonData.data);
-        setTotalPages(jsonData.total_pages || 1);
-      } else {
-        setData([]);
-        setTotalPages(1);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ===========================
-  // Handlers
-  // ===========================
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-  };
-
-  const handleEndDateChange = (date) => {
-    setEndDate(date);
-  };
-
-  const handleFirstPageClick = () => {
-    setCurrentPage(1);
-  };
-
-  const handleLastPageClick = () => {
-    setCurrentPage(totalPages);
-  };
-
-  const handlePageClick = (page) => {
-    setCurrentPage(page);
-  };
-
-  // ===========================
-  // Render Component
-  // ===========================
   return (
     <div className="container mt-2">
       <h1>Applicant Details</h1>
@@ -105,7 +69,7 @@ function Home() {
           <DatePicker
             selected={startDate}
             className="form-control date"
-            onChange={handleStartDateChange}
+            onChange={setStartDate}
             placeholderText="From Date"
           />
         </Col>
@@ -113,7 +77,7 @@ function Home() {
           <DatePicker
             selected={endDate}
             className="form-control date"
-            onChange={handleEndDateChange}
+            onChange={setEndDate}
             placeholderText="To Date"
           />
         </Col>
@@ -125,7 +89,7 @@ function Home() {
             type="text"
             className="form-control"
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search By Applicant ID.."
           />
         </Col>
@@ -182,11 +146,10 @@ function Home() {
                     <td>{connection.Reviewer_Comments || "N/A"}</td>
                     <td>
                       <Link
-                        type="button"
                         to={`/editApplicant/${connection.id}`}
                         className="btn btn-outline-success btn-sm"
                       >
-                        <i className="fa-solid fa-pen-to-square">Edit</i>
+                        Edit
                       </Link>
                     </td>
                   </tr>
@@ -207,31 +170,21 @@ function Home() {
       <div className="container">
         <ul className="pagination">
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button onClick={handleFirstPageClick} className="page-link">
+            <button onClick={() => setCurrentPage(1)} className="page-link">
               Go to First
             </button>
           </li>
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <li
-              key={index}
-              className={`page-item ${
-                currentPage === index + 1 ? "active" : ""
-              }`}
-            >
-              <button
-                onClick={() => handlePageClick(index + 1)}
-                className="page-link"
-              >
-                {index + 1}
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <li key={i} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
+              <button onClick={() => setCurrentPage(i + 1)} className="page-link">
+                {i + 1}
               </button>
             </li>
           ))}
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
-            <button onClick={handleLastPageClick} className="page-link">
+
+          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+            <button onClick={() => setCurrentPage(totalPages)} className="page-link">
               Go to Last
             </button>
           </li>

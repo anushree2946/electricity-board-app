@@ -31,6 +31,12 @@ ALLOWED_HOSTS = [
     "electricity-frontend.netlify.app"      # ✅ your frontend (if you have one)
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://electricity-board-q9zx.onrender.com',
+    'http://localhost:3000/'
+]
+
+
 # ===========================
 # INSTALLED APPS
 # ===========================
@@ -50,6 +56,7 @@ INSTALLED_APPS = [
 # ===========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -121,7 +128,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR /'staticfiles'  # Where collectstatic stores files
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
 # Whitenoise compression
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
