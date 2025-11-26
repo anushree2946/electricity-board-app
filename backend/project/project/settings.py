@@ -49,10 +49,14 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'project.urls'
 WSGI_APPLICATION = 'project.wsgi.application'
 
+
+# ----------------------------
+#  TEMPLATE CONFIG (React Build)
+# ----------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "build"],
+        'DIRS': [BASE_DIR.parent / "frontend" / "build"],  # React index.html location
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,6 +69,7 @@ TEMPLATES = [
     },
 ]
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -72,12 +77,27 @@ DATABASES = {
     }
 }
 
+
+# ----------------------------
+# STATIC + WHITENOISE CONFIG
+# ----------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# IMPORTANT → Add React static files
+STATICFILES_DIRS = [
+    BASE_DIR.parent / "frontend" / "build" / "static",
+]
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# ----------------------------
+#   CORS
+# ----------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://electricity-frontend.netlify.app"
