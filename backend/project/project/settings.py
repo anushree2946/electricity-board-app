@@ -8,8 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 
-# Toggle using environment, default to False (production)
-DEBUG = True
+DEBUG = False  # Change to False for production
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -56,7 +55,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / "frontend" / "build"],  # React index.html location
+        'DIRS': [BASE_DIR / "frontend" / "build"],  # FIXED PATH
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,14 +68,12 @@ TEMPLATES = [
     },
 ]
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # ----------------------------
 # STATIC + WHITENOISE CONFIG
@@ -86,17 +83,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# IMPORTANT → Add React static files
 STATICFILES_DIRS = [
-    BASE_DIR.parent / "frontend" / "build" / "static",
+    BASE_DIR / "frontend" / "build" / "static",  # FIXED PATH
 ]
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # ----------------------------
-#   CORS
+#   CORS SETTINGS
 # ----------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
