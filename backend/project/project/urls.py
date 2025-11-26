@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),               # Django admin
-    path("api/", include("app.urls")),             # Backend API endpoints
+    path("app/", include("app.urls")),             # Backend app endpoints
 ]
 
 # 👇 Catch-All Route: Sends all other paths to React index.html
